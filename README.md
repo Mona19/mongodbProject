@@ -1,7 +1,5 @@
 # mongodbProject
 Transit Application Database in Mongodb
-
-
 Business statement:
 We are a cab service provider and have to store information related to company’s drivers, Customers, each trip the customer takes and the car which the driver drives. Following are the business rules and rationale for the model:
 Business Rules & Rationale:
