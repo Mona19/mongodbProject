@@ -1,0 +1,6 @@
+db.trip.aggregate({$match:{"SOURCE":"College Football Hall of Fame"}}, {$group:{_id:"CUSTOMER_ID",total:{$sum:"$FARE"}}}).pretty()
+db.trip.distinct("DESTINATION")
+db.trip.aggregate({$match:{"SOURCE":"College Football Hall of Fame"}}).pretty()
+db.Customer.find({},{"PASSWORD":0}).limit(5).sort({"CUSTOMER NAME":1}).pretty()
+db.Customer.find({},{"PASSWORD":0}).limit(5).sort(-1).pretty()
+db.Customer.update({"PASSWORD":"mona"},{$set:{"PASSWORD":"aditya"}})
