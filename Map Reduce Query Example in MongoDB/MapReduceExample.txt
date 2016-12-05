@@ -1,0 +1,17 @@
+Just like Hadoop's Map_reduce, we can perform the Map-Reduce function in MongoDB as well.
+
+The various steps involved are as follows:-
+
+1. Creating the Mapper function :-
+The Mapper function maps one of the fields in the collection which is unique (which will be used as the Key) to another field in the collection that can be repeated (which will be used as the Value). In this case we are using the Customer_ID as the unique value (Key) and the Distance travelled by the customer in a trip as the repeated value (Value), as a customer can make multiple trips. The Mapper Function will combine these two data components as a Key:Value pair on the current document it is working on (referred to as "this") and will emit this pair.
+In our project we have named our Mapper Function as mapFunction1 and it emits the Customer_ID and Distance as the key:value pair. Refer 'Mapper Function.PNG' to know the function.
+
+2. Creating the Reducer Function :-
+The Reducer function shall combine the arrays of Key:Value pairs emitted by the mapper function using the Key part as reference and combining the Value part of the emitted pair based on how it is programmed. In our project, the reducer function, reduceFunction1, collects the Key:Value pairs emitted by the Mapper function and based on the Key as reference, reduces the Value part by adding all of them. The Reducer function will return all the Customers along with the Total Distance travelled by them till date, by adding the Distance travelled by them in all the trips. Refer to 'Reducer Function.PNG' to see how the Reducer Function works.
+
+3. Calling the Mapper and Reducer Function through the mapReduce function:-
+Through the collection (trip) that contains the data, we will call the mapReduce function. In the function, the first function call will be to the Mapper Function and after that to the Reducer function. We will also specify the collection where we will redirect the reduced output (map_reduce_example). On executing the mapReduce Function, we will see an output that will tell us the resultant collection, time taken to process the data, and under the counts field: number of input pairs, number of emitted pairs by the Mapper function, number of pairs reduced by the Reducer Function and final number of pairs as output. Please refer 'MapReduceFunction.PNG'.
+
+4. Checking the Output Document:-
+On checking the output collection, we can see that each Key:Value pair is stored as a document in the collection, and the Customer_ID field has been treated as the defaulty unique index (_id) of the document with the sum of distances travelled being present in the 'value' field of the document. Refer 'Output.PNG' for seeing actual output.
+
