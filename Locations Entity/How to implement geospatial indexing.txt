@@ -1,0 +1,174 @@
+		How to create a GeoJSON with Geospatial Indexing
+
+1. Create a JSON file called collection.json with a specific format for collecting the coordinates for each location under the GeoJSON Specification Format.
+
+---------------------------------------
+
+2. Import the JSON in the database you want with collection name (Here database = dbms_team_project and collection = location).
+Format of the command:-mongoimport --db <database name> --collection <colection name> --type json <JSON File name>
+
+mongoimport --db dbms_team_project --collection location --type json location.json
+
+Please refer 'ImportingDocumentsInCollection.PNG' for better understanding.
+
+---------------------------------------
+
+3. Start the mongo shell after running the mongod server (through the 'mongod' command) in another command prompt. Then switch from the default database to the 'project' database.
+
+C:\Users\Aditya Gogoi>mongo
+MongoDB shell version: 3.2.10
+connecting to: test
+> use dbms_team_project
+switched to db dbms_team_project
+
+---------------------------------------
+
+4. Check out a few of the documents in the collection.
+
+Format of the command:-db.<collection_name>.find().pretty()
+
+> db.location.find().pretty()
+{
+        "_id" : "GA01",
+        "name" : "Georgia Aquarium",
+        "address" : "225 Baker St NW, Atlanta, GA 30313",
+        "state" : "Georgia",
+        "coordinates" : {
+                "type" : "Point",
+                "coordinates" : [
+                        -84.394891,
+                        33.763424
+                ]
+        }
+}
+{
+        "_id" : "GA04",
+        "name" : "Centennial Olympic Park",
+        "address" : "265 Park Avenue West, Atlanta, GA 30313",
+        "state" : "Georgia",
+        "coordinates" : {
+                "type" : "Point",
+                "coordinates" : [
+                        -84.39451,
+                        33.761837
+                ]
+        }
+}
+{
+        "_id" : "GA06",
+        "name" : "Forsyth Park",
+        "address" : "Drayton St, Savannah, GA 31401",
+        "state" : "Georgia",
+        "coordinates" : {
+                "type" : "Point",
+                "coordinates" : [
+                        -81.095388,
+                        32.066572
+                ]
+        }
+}
+
+.
+. <More documents follow>
+.
+.
+You will notice that the 'coordinates' field has a Document embedded as its value. This is a GeoJSON document. But to make it effective, we need to include the Geospatial '2dsphere' index to this collection of GeoJSON documents. 
+
+Refer 'GeoJSON View.png' for better understanding.
+
+---------------------------------------
+
+4. Apply the geospatial '2dsphere' index in the following format:-
+Format of the command:-db.<collection name>.ensureIndex({'coordinates':'2dsphere'})
+
+>db.location.ensureIndex({'coordinates':'2dsphere'})
+connecting to: localhost:27017/dbms_team_project
+{
+	"createdCollectionAutomatically" : false,
+	"numIndexesBefore" : 2,
+	"numIndexesAfter" : 2,
+	"note" : "all indexes already exist",
+	"ok" : 1
+}
+
+Refer 'Index Creation.PNG' for better understanding.
+---------------------------------------
+
+5. Check that there are 2 indexes (a default index and a geospatial index).
+Format of the command:-db.<collection name>.getIndexes()
+
+> db.location.getIndexes()
+[
+        {
+                "v" : 1,
+                "key" : {
+                        "_id" : 1
+                },
+                "name" : "_id_",
+                "ns" : "dbms_team_project.location"
+        },
+        {
+                "v" : 1,
+                "key" : {
+                        "coordinates" : "2dsphere"
+                },
+                "name" : "coordinates_2dsphere",
+                "ns" : "dbms_team_project.location",
+                "2dsphereIndexVersion" : 3
+        }
+]
+
+Refer 'Index View.PNG' for better understanding.
+---------------------------------------
+
+5. We can use the index to see how many locations are close to a given coordinate within a specific maximum distance (Proximity Search Operation).
+
+Format of the command:-db.<collection_name>.find({<field_with_GeoJSON_doc>:{$near:{$geometry:{type:"Point",coordinates:[<Longitude>,<Latitude>]}, $maxdistance:<Max Distance in meters>}}}).pretty()
+
+> db.location.find({coordinates:{$near:{$geometry:{type:"Point",coordinates:[-84,33]}, $maxDistance:80000}}}).pretty()
+{
+        "_id" : "GA24",
+        "name" : "Museum of Aviation",
+        "address" : "1942 Heritage Blvd, Robins AFB, GA 31098",
+        "state" : "Georgia",
+        "coordinates" : {
+                "type" : "Point",
+                "coordinates" : [
+                        -83.587858,
+                        32.59214
+                ]
+        }
+}
+
+--------------------------------------
+6. Increasing the Maximum distance to include more GeoJSON documents form nearest to farthest with reference to the entered coordinate.
+
+> db.location.find({coordinates:{$near:{$geometry:{type:"Point",coordinates:[-84,33]}, $maxDistance:85000}}}).pretty()
+{
+        "_id" : "GA24",
+        "name" : "Museum of Aviation",
+        "address" : "1942 Heritage Blvd, Robins AFB, GA 31098",
+        "state" : "Georgia",
+        "coordinates" : {
+                "type" : "Point",
+                "coordinates" : [
+                        -83.587858,
+                        32.59214
+                ]
+        }
+}
+{
+        "_id" : "GA20",
+        "name" : "Callaway Gardens",
+        "address" : "Columbus, GA 30304",
+        "state" : "Georgia",
+        "coordinates" : {
+                "type" : "Point",
+                "coordinates" : [
+                        -84.848313,
+                        32.854943
+                ]
+        }
+}
+
+Refer 'Proximity Location Search.PNG' for better understanding.
